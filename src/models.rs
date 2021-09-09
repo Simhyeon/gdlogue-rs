@@ -21,9 +21,9 @@ impl Dialogue {
         Ok(())
     }
 
-    pub fn new_file(path: &Path, format: Format) -> Result<(), GdlError> {
-        let dialogue = Dialogue::deserialize(path)?;
-        let dot_script = dialogue.create_dot_script("Test")?;
+    pub fn new_dot_image(path: &Path, format: Format) -> Result<(), GdlError> {
+        let dialogue = Dialogue::read_from_file(path)?;
+        let dot_script = dialogue.dot_script("Test")?;
 
         if cfg!(debug_assertions) {
             std::fs::write(&std::env::current_dir()?.join("out.gv"), dot_script.as_bytes())?;
@@ -34,19 +34,18 @@ impl Dialogue {
         Ok(())
     }
 
-    pub fn serialize(&self, path: &Path) -> Result<(), GdlError> {
+    pub fn save_to_file(&self, path: &Path) -> Result<(), GdlError> {
         let rif_config = serde_json::to_string_pretty(self)?;
         std::fs::write(path, rif_config)?;
 
         Ok(())
     }
 
-    pub fn deserialize(path : &Path) -> Result<Self, GdlError> {
+    pub fn read_from_file(path : &Path) -> Result<Self, GdlError> {
         Ok(serde_json::from_str(&std::fs::read_to_string(path)?)?)
     }
 
-    // TODO
-    fn create_dot_script(&self, name: &str) -> Result<String, GdlError> {
+    pub fn dot_script(&self, name: &str) -> Result<String, GdlError> {
         let mut dot_script = format!("digraph {0} {{
 ", name);
         let global_attr = r#"    node [shape="record"]
